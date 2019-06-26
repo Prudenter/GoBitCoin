@@ -8,6 +8,7 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"time"
 )
 
 /*
@@ -16,11 +17,28 @@ import (
  	第二阶段: 补充字段：Version，时间戳，难度值等
 */
 type Block struct {
+	//版本号
+	Version uint64
+
 	// 前区块哈希
 	PrevHash []byte
-	// 当前区块的哈希,为了方便,我们将当前区块的哈希也放入Block中
+
+	//交易的根哈希值
+	MerkleRoot []byte
+
+	//时间戳
+	TimeStamp uint64
+
+	//难度值, 系统提供一个数据，用于计算出一个哈希值
+	Bits uint64
+
+	//随机数，挖矿要求的数值
+	Nonce uint64
+
+	// 当前区块的哈希,为了方便,将当前区块的哈希也放入Block中
 	Hash []byte
-	// 数据
+
+	//数据
 	Data []byte
 }
 
@@ -31,9 +49,14 @@ type Block struct {
 */
 func NewBlock(data string, prevHash []byte) *Block {
 	b := Block{
-		PrevHash: prevHash,
-		Hash:     nil,
-		Data:     []byte(data),
+		Version:    0,
+		PrevHash:   prevHash,
+		MerkleRoot: nil,
+		TimeStamp:  uint64(time.Now().Unix()),
+		Bits:       0,
+		Nonce:      0,
+		Hash:       nil,
+		Data:       []byte(data),
 	}
 
 	// 计算哈希值
@@ -51,7 +74,12 @@ func (b *Block) setHash() {
 
 	// 构造一个二维字节切片
 	temp := [][]byte{
+		uintToByte(b.Version),
 		b.PrevHash,
+		b.MerkleRoot,
+		uintToByte(b.TimeStamp),
+		uintToByte(b.Bits),
+		uintToByte(b.Nonce),
 		b.Hash,
 		b.Data,
 	}
