@@ -6,8 +6,6 @@
 package main
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"time"
 )
 
@@ -59,34 +57,11 @@ func NewBlock(data string, prevHash []byte) *Block {
 		Data:       []byte(data),
 	}
 
-	// 计算哈希值
-	b.setHash()
+	// 将pow集成到Block中
+	pow := NewProofofWork(&b)
+	hash, nonce := pow.Run()
+	b.Hash = hash
+	b.Nonce = nonce
+
 	return &b
-}
-
-/*
-	定义计算区块哈希值的方法
-*/
-func (b *Block) setHash() {
-	// 比特币哈希算法:func Sum256(data []byte) [Size]byte
-	// 这里data是block中各个字段拼成的字节流
-	// 我们使用Join(s [][]byte, sep []byte) []byte拼接各个切片字段,接收一个二维的切片,使用一个一维切片拼接,返回拼接后的一维切片.
-
-	// 构造一个二维字节切片
-	temp := [][]byte{
-		uintToByte(b.Version),
-		b.PrevHash,
-		b.MerkleRoot,
-		uintToByte(b.TimeStamp),
-		uintToByte(b.Bits),
-		uintToByte(b.Nonce),
-		b.Hash,
-		b.Data,
-	}
-	// 使用Join方法进行拼接
-	data := bytes.Join(temp, []byte{})
-
-	// 计算当前区块的哈希
-	hash := sha256.Sum256(data)
-	b.Hash = hash[:]
 }

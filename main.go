@@ -34,5 +34,9 @@ func main() {
 		fmt.Printf("Nonce : %d\n", block.Nonce)
 		fmt.Printf("Hash : %x\n", block.Hash)
 		fmt.Printf("Data : %s\n", block.Data)
+
+		// 其他旷工验证区块
+		pow := NewProofofWork(block)
+		fmt.Printf("验证结果为:%v\n", pow.IsValid())
 	}
 }
