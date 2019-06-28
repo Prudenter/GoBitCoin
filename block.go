@@ -6,6 +6,9 @@
 package main
 
 import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
 	"time"
 )
 
@@ -64,4 +67,43 @@ func NewBlock(data string, prevHash []byte) *Block {
 	b.Nonce = nonce
 
 	return &b
+}
+
+/*
+	定义序列化方法,使用gob编码,将block序列化
+	gob编码,go语言内置编解码包,可以支持变长类型的编解码（通用）
+*/
+func (b *Block) Serialize() []byte {
+
+	// 编码
+	var buffer bytes.Buffer
+	// 1.创建编码器
+	encoder := gob.NewEncoder(&buffer)
+	// 2.编码
+	err := encoder.Encode(&b)
+	if err != nil {
+		fmt.Printf("encode err:", err)
+		return nil
+	}
+
+	return buffer.Bytes()
+}
+
+/*
+	定义反序列化方法
+	输入[]byte,返回block
+*/
+func Deserialize(src []byte) *Block {
+	// 解码
+	var block Block
+	// 1.创建解码器
+	decoder := gob.NewDecoder(bytes.NewReader(src))
+	// 2.解码
+	err := decoder.Decode(&block)
+	if err != nil {
+		fmt.Printf("Decode err:", err)
+		return nil
+	}
+
+	return &block
 }

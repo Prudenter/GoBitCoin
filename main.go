@@ -6,7 +6,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 )
 
 /*
@@ -15,8 +14,12 @@ import (
 func main() {
 
 	// 创建区块链
-	bc := NewBlockChain()
-	// 添加时间缓冲
+	err := CreateBlockChain()
+	if err != nil {
+		fmt.Println("CreateBlockChain err:", err)
+		return
+	}
+	/*// 添加时间缓冲
 	time.Sleep(1 * time.Second)
 	// 添加区块数据到区块链中
 	bc.AddBlock("go语言是世界上最好的语言!")
@@ -38,5 +41,5 @@ func main() {
 		// 其他旷工验证区块
 		pow := NewProofofWork(block)
 		fmt.Printf("验证结果为:%v\n", pow.IsValid())
-	}
+	}*/
 }

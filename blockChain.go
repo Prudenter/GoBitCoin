@@ -123,7 +123,7 @@ func GetBlockChainInstance() (*BlockChain, error) {
 	参数:当前区块的数据,不需要提供前一个区块的哈希值,因为bc可以通过自己的下标拿到前一个区块的哈希值
 */
 func (bc *BlockChain) AddBlock(data string) {
-	// 通过下标,得到最后一个区块
+	/*// 通过下标,得到最后一个区块
 	lastBlock := bc.Blocks[len(bc.Blocks)-1]
 	// 最后一个区块的哈希值就是是新区块的的前哈希值
 	prevHash := lastBlock.Hash
@@ -132,5 +132,5 @@ func (bc *BlockChain) AddBlock(data string) {
 	newBlock := NewBlock(data, prevHash)
 
 	// 添加区块到区块链中
-	bc.Blocks = append(bc.Blocks, newBlock)
+	bc.Blocks = append(bc.Blocks, newBlock)*/
 }
