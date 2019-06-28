@@ -31,7 +31,7 @@ const blockChainDB = "blockChain.db"
 // 定义装所有block的桶
 const blockBucket = "blockBucket"
 
-// 定义最后区块哈希值的key,用于访问bolt数据库，得到最后一个区块的哈希值
+// 定义最后一个区块哈希值的key,用于访问bolt数据库，得到最后一个区块的哈希值
 const lastBlockHashKey = "lastBlockHashKey"
 
 /*
@@ -66,7 +66,7 @@ func CreateBlockChain() error {
 			// Serialize()是将block序列化的方法
 			bucket.Put(genesisBlock.Hash, genesisBlock.Serialize())
 
-			// 5.将最后区块哈希值写入到数据库
+			// 5.将最后一个区块的哈希值写入到数据库
 			bucket.Put([]byte(lastBlockHashKey), genesisBlock.Hash)
 		}
 		return nil
@@ -88,13 +88,12 @@ func GetBlockChainInstance() (*BlockChain, error) {
 	var lastHash []byte
 
 	// 1.打开数据库
-	// func Open(path string, mode os.FileMode, options *Options) (*DB, error)
 	db, err := bolt.Open(blockChainDB, 0400, nil)
 	if err != nil {
 		fmt.Println("bolt.Open err: ", err)
 		return nil, err
 	}
-	// 在这里不关闭数据库,因为后续还要重复使用这个句柄
+	// 在这里不关闭数据库,因为后续添加区块时还要使用这个句柄
 
 	// 2.创建bucket
 	err = db.View(func(tx *bolt.Tx) error {
@@ -120,17 +119,37 @@ func GetBlockChainInstance() (*BlockChain, error) {
 
 /*
 	定义一个向区块链中添加区块的方法
-	参数:当前区块的数据,不需要提供前一个区块的哈希值,因为bc可以通过自己的下标拿到前一个区块的哈希值
+	参数:当前区块的数据,不需要提供前一个区块的哈希值,因为bc中有最后一个区块的哈希值
 */
-func (bc *BlockChain) AddBlock(data string) {
-	/*// 通过下标,得到最后一个区块
-	lastBlock := bc.Blocks[len(bc.Blocks)-1]
-	// 最后一个区块的哈希值就是是新区块的的前哈希值
-	prevHash := lastBlock.Hash
+func (bc *BlockChain) AddBlock(data string) error {
+	// 获取区块链中最后一个区块的哈希值
+	lastBlockHash := bc.lastHash
 
-	// 创建block
-	newBlock := NewBlock(data, prevHash)
+	// 1.创建区块
+	block := NewBlock(data, lastBlockHash)
 
-	// 添加区块到区块链中
-	bc.Blocks = append(bc.Blocks, newBlock)*/
+	// 2.写入bolt数据库
+	err := bc.db.Update(func(tx *bolt.Tx) error {
+		// 创建bucket
+		bucket := tx.Bucket([]byte(blockBucket))
+		// 判断bucket是否存在
+		if bucket == nil {
+			return errors.New("AddBlock时Bucket不应为空!")
+		}
+
+		// 3.写入区块数据,key是区块的哈希值，value是block的字节流
+		bucket.Put(block.Hash, block.Serialize())
+
+		// 4.更新最后一个区块的哈希值
+		bucket.Put([]byte(lastBlockHashKey), block.Hash)
+
+		// 5.更新bc的lastHash,保证后续AddBlock时可以基于block追加
+		bc.lastHash = block.Hash
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("bc.db.Update err:", err)
+		return err
+	}
+	return nil
 }

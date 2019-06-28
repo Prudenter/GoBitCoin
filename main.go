@@ -19,6 +19,30 @@ func main() {
 		fmt.Println("CreateBlockChain err:", err)
 		return
 	}
+
+	// 获取区块链实例
+	bc, err := GetBlockChainInstance()
+	if err != nil {
+		fmt.Println("GetBlockChainInstance err:", err)
+		return
+	}
+
+	// 使用完关闭数据库
+	defer bc.db.Close()
+
+	// 添加一个区块数据
+	err = bc.AddBlock("hello world!")
+	if err != nil {
+		fmt.Println("AddBlock err:", err)
+		return
+	}
+
+	err = bc.AddBlock("hello BTC!")
+	if err != nil {
+		fmt.Println("AddBlock err:", err)
+		return
+	}
+
 	/*// 添加时间缓冲
 	time.Sleep(1 * time.Second)
 	// 添加区块数据到区块链中
