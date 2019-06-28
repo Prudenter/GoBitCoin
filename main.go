@@ -43,16 +43,17 @@ func main() {
 		return
 	}
 
-	/*// 添加时间缓冲
-	time.Sleep(1 * time.Second)
-	// 添加区块数据到区块链中
-	bc.AddBlock("go语言是世界上最好的语言!")
-	time.Sleep(1 * time.Second)
-	bc.AddBlock("2019年6月26号btc暴涨20%,突破9万元/个")
-
-	// 打印区块链
-	for i, block := range bc.Blocks {
-		fmt.Printf("\n---------当前区块高度:%d---------\n", i)
+	// 调用迭代器,遍历输出blockChain
+	it := bc.NewIterator()
+	for {
+		// 调用Next方法,从后向前逐一获取区块
+		block, err := it.Next()
+		if err != nil {
+			fmt.Println("Next err: ", err)
+			return
+		}
+		// 打印每个区块的详细信息
+		fmt.Printf("\n--------------------\n")
 		fmt.Printf("Version : %d\n", block.Version)
 		fmt.Printf("PrevHash : %x\n", block.PrevHash)
 		fmt.Printf("MerkleRoot : %x\n", block.MerkleRoot)
@@ -65,5 +66,11 @@ func main() {
 		// 其他旷工验证区块
 		pow := NewProofofWork(block)
 		fmt.Printf("验证结果为:%v\n", pow.IsValid())
-	}*/
+
+		// 退出条件
+		if block.PrevHash == nil {
+			fmt.Println("区块链遍历结束!")
+			break
+		}
+	}
 }

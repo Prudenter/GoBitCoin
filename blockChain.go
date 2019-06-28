@@ -153,3 +153,57 @@ func (bc *BlockChain) AddBlock(data string) error {
 	}
 	return nil
 }
+
+/*
+	定义迭代器,遍历整个区块链
+*/
+type Iterator struct {
+	// bolt数据库,用于存储数据
+	db *bolt.DB
+	// 不断变化的哈希值,用于访问链上所有区块
+	currentHash []byte
+}
+
+/*
+	定义方法,将Iterator绑定到BlockChain
+*/
+func (bc *BlockChain) NewIterator() *Iterator {
+	it := Iterator{
+		db:          bc.db,
+		currentHash: bc.lastHash,
+	}
+	return &it
+}
+
+/*
+	给Iterator绑定一个方法:Next
+	两个功能: 1.返回当前currentHash所指向的区块
+             2.更新currentHash,指向前一个区块
+*/
+func (it *Iterator) Next() (block *Block, err error) {
+	// 读取Bucket中最后一个区块的数据
+	// 1.创建bucket
+	err = it.db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(blockBucket))
+		// 判断bucket是否存在
+		if bucket == nil {
+			return errors.New("Iterator Next时bucket不应为nil")
+		}
+
+		// 2.从数据库中读取最后一个区块的数据
+		// 得到的数据是block的字节流,需要做解码处理
+		// 注意,这里是在做迭代操作,所以一定是currentHash,而不是lastHash
+		blockTempInfo := bucket.Get([]byte(it.currentHash))
+		// 3.进行解码操作
+		block = Deserialize(blockTempInfo)
+
+		// 4.更新currentHash,指向前一个区块
+		it.currentHash = block.PrevHash
+		return nil
+	})
+	if err != nil {
+		fmt.Println("it.db.View err: ", err)
+		return nil, err
+	}
+	return
+}
