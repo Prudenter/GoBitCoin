@@ -5,6 +5,15 @@
 
 package main
 
+import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/gob"
+	"fmt"
+	"github.com/micro/go-config/encoder"
+	"time"
+)
+
 /*
 	定义交易结构体
 */
@@ -39,4 +48,52 @@ type TXOutput struct {
 	ScriptPubKey string
 	// 转账金额
 	Value float64
+}
+
+/*
+	定义获取交易ID的方法
+	对交易做哈希处理
+*/
+func (tx *Transaction) setHash() error {
+	// 对tx做gob编码得到字节流,做sha256,赋值给TXId
+	var buffer bytes.Buffer
+	// 定义编码器
+	encoder := gob.NewEncoder(&buffer)
+	err := encoder.Encode(tx)
+	if err != nil {
+		fmt.Println("Encode err: ", err)
+		return err
+	}
+	// 计算tx字节流的哈希值
+	hash := sha256.Sum256(buffer.Bytes())
+	// 使用tx字节流的哈希值作为交易id
+	tx.TXId = hash[:]
+	return nil
+}
+
+// 自定义挖矿奖励
+var reward = 12.5
+
+/*
+	定义创建挖矿交易的函数
+	参数1:挖矿人,参数2:矿工输入的任意显示参数
+*/
+func NewCoinbaseTx(miner string, data string) *Transaction {
+	// 特点：没有输入，只有一个输出，得到挖矿奖励
+	// 挖矿交易不需要签名，所以这个签名字段可以书写任意值，只有矿工有权利写
+	// 中本聪：写的创世语,现在都是由矿池来写，写自己矿池的名字
+	inPut := TXInput{TXId: nil, Index: -1, ScriptSig: data}
+	outPut := TXOutput{Value: reward, ScriptPubKey: miner}
+	timeStamp := time.Now().Unix()
+	// 定义交易结构体并赋值
+	tx := Transaction{
+		TXId:      nil,
+		TXInputs:  []TXInput{inPut},
+		TXOutputs: []TXOutput{outPut},
+		TimeStamp: uint64(timeStamp),
+	}
+
+	// 获取交易ID
+	tx.setHash()
+	return &tx
 }
