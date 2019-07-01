@@ -10,7 +10,6 @@ import (
 	"crypto/sha256"
 	"encoding/gob"
 	"fmt"
-	"github.com/micro/go-config/encoder"
 	"time"
 )
 
@@ -76,7 +75,7 @@ var reward = 12.5
 
 /*
 	定义创建挖矿交易的函数
-	参数1:挖矿人,参数2:矿工输入的任意显示参数
+	参数1:挖矿人,  参数2:付款人对当前交易的签名,挖矿交易不需要签名，所以这个签名字段可以书写任意值，只有矿工有权利写
 */
 func NewCoinbaseTx(miner string, data string) *Transaction {
 	// 特点：没有输入，只有一个输出，得到挖矿奖励

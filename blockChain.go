@@ -59,14 +59,19 @@ func CreateBlockChain() error {
 				fmt.Println("CreateBucket err :", err)
 				return err
 			}
-			// 4.创建bucket后,写入创世块
-			// 创建创世块
-			genesisBlock := NewBlock(genesisInfo, nil)
-			// 将创世块写入,key是区块的哈希值，value是block的字节流
+
+			// 写入创世块
+			// 4.创建挖矿交易
+			coinbase := NewCoinbaseTx("中本聪", genesisInfo)
+			// 5.拼装txs,txs []*Transaction
+			txs := []*Transaction{coinbase}
+			// 6.创建创世块
+			genesisBlock := NewBlock(txs, nil)
+			// 7.将创世块写入,key是区块的哈希值，value是block的字节流
 			// Serialize()是将block序列化的方法
 			bucket.Put(genesisBlock.Hash, genesisBlock.Serialize())
 
-			// 5.将最后一个区块的哈希值写入到数据库
+			// 8.将最后一个区块的哈希值写入到数据库
 			bucket.Put([]byte(lastBlockHashKey), genesisBlock.Hash)
 		}
 		return nil
@@ -121,7 +126,7 @@ func GetBlockChainInstance() (*BlockChain, error) {
 	定义一个向区块链中添加区块的方法
 	参数:当前区块的数据,不需要提供前一个区块的哈希值,因为bc中有最后一个区块的哈希值
 */
-func (bc *BlockChain) AddBlock(data string) error {
+/*func (bc *BlockChain) AddBlock(data string) error {
 	// 获取区块链中最后一个区块的哈希值
 	lastBlockHash := bc.lastHash
 
@@ -152,7 +157,7 @@ func (bc *BlockChain) AddBlock(data string) error {
 		return err
 	}
 	return nil
-}
+}*/
 
 /*
 	定义迭代器,遍历整个区块链

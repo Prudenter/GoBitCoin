@@ -57,7 +57,6 @@ func (pow *ProofofWork) PrepareData(nonce uint64) []byte {
 		uintToByte(b.TimeStamp),
 		uintToByte(b.Bits),
 		uintToByte(nonce),
-		b.Data,
 	}
 	// 使用Join方法进行拼接,将二维切片转为一维切片
 	data := bytes.Join(temp, []byte{})

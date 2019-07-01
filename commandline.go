@@ -25,22 +25,22 @@ func (cli *CLI) createBlockChain() {
 */
 func (cli *CLI) addBlock(data string) {
 	// 获取区块链实例
-	bc, err := GetBlockChainInstance()
-	if err != nil {
-		fmt.Println("GetBlockChainInstance err:", err)
-		return
-	}
-
-	// 使用完关闭数据库
-	defer bc.db.Close()
-
-	// 添加一个区块数据
-	err = bc.AddBlock(data)
-	if err != nil {
-		fmt.Println("AddBlock err:", err)
-		return
-	}
-	fmt.Println("添加区块成功!")
+	//bc, err := GetBlockChainInstance()
+	//if err != nil {
+	//	fmt.Println("GetBlockChainInstance err:", err)
+	//	return
+	//}
+	//
+	//// 使用完关闭数据库
+	//defer bc.db.Close()
+	//
+	//// 添加一个区块数据
+	//err = bc.AddBlock(data)
+	//if err != nil {
+	//	fmt.Println("AddBlock err:", err)
+	//	return
+	//}
+	//fmt.Println("添加区块成功!")
 }
 
 /*
@@ -73,7 +73,7 @@ func (cli *CLI) printBlock() {
 		fmt.Printf("Bits : %d\n", block.Bits)
 		fmt.Printf("Nonce : %d\n", block.Nonce)
 		fmt.Printf("Hash : %x\n", block.Hash)
-		fmt.Printf("Data : %s\n", block.Data)
+		fmt.Printf("Data : %s\n", block.Transactions[0].TXInputs[0].ScriptSig) //矿工写入的数据
 
 		// 其他旷工验证区块
 		pow := NewProofofWork(block)
